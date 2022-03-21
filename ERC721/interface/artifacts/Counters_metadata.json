@@ -1,0 +1,56 @@
+{
+	"compiler": {
+		"version": "0.8.4+commit.c7e474f2"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [],
+		"devdoc": {
+			"author": "Matt Condon (@shrugs)",
+			"details": "Provides counters that can only be incremented, decremented or reset. This can be used e.g. to track the number of elements in a mapping, issuing ERC721 ids, or counting request ids. Include with `using Counters for Counters.Counter;`",
+			"kind": "dev",
+			"methods": {},
+			"title": "Counters",
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"interface/Counters.sol": "Counters"
+		},
+		"evmVersion": "istanbul",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"interface/Counters.sol": {
+			"keccak256": "0x7f94752f86bd107c9ac33e971a437811faec2a5212f30c828160d42b35337c58",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://f3dfa538d094f47b13ba64b3da80111cf92e61d793268942d02a3353aa599cb0",
+				"dweb:/ipfs/QmW9x1RBUeRHkv3xsWoru3VN39mzWABYk2etCfj99rYs6P"
+			]
+		},
+		"interface/SafeMath.sol": {
+			"keccak256": "0xf9a9ccf2991082d8118470e95c271d353461805c9bcddb4bcefba6a1745dee38",
+			"license": "UNLICENSED",
+			"urls": [
+				"bzz-raw://674b20cb20fa0be75c928b5604b3f95479d4171091f8e7e225377ea8326b83b9",
+				"dweb:/ipfs/QmYDq12muwoiaK2SRjfyv7MCdeM7EYkFDa1frtA9bFwZDz"
+			]
+		}
+	},
+	"version": 1
+}
