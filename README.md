@@ -1,2 +1,2 @@
 # MySolidity
-AgeofStrategy-solidity
+solidity
