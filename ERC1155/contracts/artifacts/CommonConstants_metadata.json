@@ -1,0 +1,38 @@
+{
+	"compiler": {
+		"version": "0.5.17+commit.d19bba13"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [],
+		"devdoc": {
+			"methods": {}
+		},
+		"userdoc": {
+			"methods": {},
+			"notice": "Note: Simple contract to use as base for const vals"
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"contracts/Common.sol": "CommonConstants"
+		},
+		"evmVersion": "istanbul",
+		"libraries": {},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"contracts/Common.sol": {
+			"keccak256": "0x900d50cdfedbcf60e9e1ef727674ead98b35abf5a01714ed285989d410c01db8",
+			"urls": [
+				"bzz-raw://9903b443608607b5f94e85f77d35528baf9adb8c7acc70bc0818437a251f4c8b",
+				"dweb:/ipfs/QmRHVoDnjh7ihKZJCXbsVwMEodGEtKBE1wJcvxqkqec2R2"
+			]
+		}
+	},
+	"version": 1
+}
