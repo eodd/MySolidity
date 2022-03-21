@@ -1,0 +1,139 @@
+{
+	"compiler": {
+		"version": "0.8.4+commit.c7e474f2"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "account",
+						"type": "address"
+					}
+				],
+				"name": "balanceOf",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "decimals",
+				"outputs": [
+					{
+						"internalType": "uint8",
+						"name": "",
+						"type": "uint8"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "recipient",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "amount",
+						"type": "uint256"
+					}
+				],
+				"name": "transfer",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "sender",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "recipient",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "amount",
+						"type": "uint256"
+					}
+				],
+				"name": "transferFrom",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"Staking.sol": "IERC20"
+		},
+		"evmVersion": "istanbul",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"SafeMath.sol": {
+			"keccak256": "0x846996d8b1ae8564d93bcbf8eddcfee7c9513a603d08cd237bfadbc3b3667713",
+			"license": "UNLICENSED",
+			"urls": [
+				"bzz-raw://6e67e0d08e6a3da56626a894ec2929487f9ebd363b7b038efb46f5f4b6175a14",
+				"dweb:/ipfs/QmWnkLKa3iTvwTUU1cwNdKfTpkwqiTvzus7PKfTj4VcNLp"
+			]
+		},
+		"Staking.sol": {
+			"keccak256": "0x592b1529e0ffa521b34635668bade4590727eebdbbfe3bf996c0bcd6a44d4969",
+			"license": "UNLICENSED",
+			"urls": [
+				"bzz-raw://ea6498f32b075b36c9ba2880c878ef4465ae111f0cc6fdab74f1d7dcf7e951ee",
+				"dweb:/ipfs/QmSGp11JfwcUQ6Hz1FeWkpvPmrEm839qD3q3Mo35Zn4bdN"
+			]
+		}
+	},
+	"version": 1
+}
