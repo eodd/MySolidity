@@ -24,6 +24,8 @@ contract MyRole is ERC721, Ownable {
     Counters.Counter private currentTokenId;
     mapping(uint256 => string) private _tokenURIs;
     bool private _notEntered = true;
+    address owner;
+    address stakingAddress;
     
     event BuyRole( 
         address account,
@@ -44,6 +46,7 @@ contract MyRole is ERC721, Ownable {
         // assembly {
         //     chainId := chainid()//获取链的id
         // }
+        owner = msg.sender;
     }
     //非重入
     modifier nonReentrant() {
@@ -101,7 +104,8 @@ contract MyRole is ERC721, Ownable {
             amount = 1000 * 1e8;
         }
 
-        _inter_transfer(amount);
+        _inter_transfer(amount.div(2));//50%进staking
+        _inter_burn(amount.div(2));//50%销毁
         uint256 new_tokenid = _mint(msg.sender);
         uid++;
 
@@ -111,9 +115,21 @@ contract MyRole is ERC721, Ownable {
             new_tokenid
         );
     }
-    //购买角色时调用
+    
+    function setStaking(address account)public view{
+        require(msg.sender == owner, "not owner.");
+        stakingAddress = account;
+    }
+
+    //销毁50%
+    function _inter_burn(uint256 amount){
+        IERC20(token).transferFrom(msg.sender, address(0), amount);
+    }
+
+    //50%进staking质押
     function _inter_transfer(uint256 amount) internal {
-        IERC20(token).transferFrom(msg.sender, address(this), amount);
+        require(stakingAddress != address(0), "staking address not address(0).");
+        IERC20(token).transferFrom(msg.sender, stakingAddress, amount);
     }
 
     function claim_token(uint256 number) public onlyOwner {
