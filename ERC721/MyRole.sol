@@ -12,13 +12,11 @@ contract MyRole is ERC721, Ownable {
     using Counters for Counters.Counter;
     using Strings for uint256;
 
-    uint256 rults;
     address public token;
     address public claimAccount;
     mapping(uint256 => uint256) private price;
-    mapping(address => uint256) private nonce;
-    uint256 private roleId;
-    mapping(address => mapping(uint256 => Role)) public role;
+    // mapping(address => uint256) private nonce;
+    uint256 public uid;//记录用户创建角色个数
     
     string public baseExtension = ".json";
     string public baseURI;
@@ -26,27 +24,13 @@ contract MyRole is ERC721, Ownable {
     Counters.Counter private currentTokenId;
     mapping(uint256 => string) private _tokenURIs;
     bool private _notEntered = true;
-
-    bytes32 public DOMAIN_SEPARATOR;
-    bytes32 public constant EIP712_DOMAIN_TYPEHASH =
-        keccak256(
-            bytes(
-                "EIP712Domain(string name, string version, uint256 chainId, address verifyingContract)"
-            )
-        );
-    bytes32 public constant BUYROLE_TRANSACTION_TYPEHASH =
-        keccak256(
-            bytes(
-                "BuyRole(string name, uint256 level, address account, uint256 nonce)"
-            )
-        );
-
+    address owner;
+    address stakingAddress;
+    
     event BuyRole( 
         address account,
         uint256 amount,
-        uint256 tokenid,
-        string  name,
-        uint256 level 
+        uint256 tokenid
     );
 
     event ClaimToken(address account, uint256 number);
@@ -54,33 +38,15 @@ contract MyRole is ERC721, Ownable {
     event LockToken(address indexed account, uint256[] tokenId);
     event UnLockToken(address indexed account, uint256[] tokenId);
 
-    struct Role{//角色属性
-        string  name;
-        uint256 level;//等级
-    }
-
-    constructor(address _token, address _claimAccount)//初始化合约名字、符号
-        ERC721("MyRole", "Role")
-    {
-        // _mint(_claimAccount);//铸币
-
+    constructor(address _token, address _claimAccount) ERC721("MyRole", "Role"){
         setBaseURI(_initBaseURI);//设置URI地址
-
-        token = _token;//NFTtoken
-        claimAccount = _claimAccount;//账户
-        // uint256 chainId = 3;
+        token = _token;//ERC20代币token
+        claimAccount = _claimmAccount;//提钱账户
+        // uint256 chainId;
         // assembly {
         //     chainId := chainid()//获取链的id
         // }
-        DOMAIN_SEPARATOR = keccak256(
-            abi.encode(
-                EIP712_DOMAIN_TYPEHASH,//"EIP712Domain(string name, string version, uint256 chainId, address verifyingContract)"
-                keccak256(bytes("Role")),
-                keccak256(bytes("1"))
-                // chainId
-                // address(0xd9145CCE52D386f254917e481eB44e9943F39138)
-            )
-        );
+        owner = msg.sender;
     }
     //非重入
     modifier nonReentrant() {
@@ -90,9 +56,13 @@ contract MyRole is ERC721, Ownable {
         _notEntered = true;
     }
     //返回nonce
-    function nonceOf(address account) public view returns (uint256) {
-        return nonce[account];
+    // function nonceOf(address account) public view returns (uint256) {
+    //     return nonce[account];
+    // }
+    function getUid() public view returns(uint256){
+        return uid;
     }
+
     //锁定
     function lock(uint256[] memory tokenIds) public {
         for (uint256 _i = 0; _i < tokenIds.length; _i++) {
@@ -118,78 +88,48 @@ contract MyRole is ERC721, Ownable {
         address owner = ERC721.ownerOf(tokenId);
         return owner == msg.sender;
     }
+
     //购买角色
     function buyRole(
-        address account, 
-        uint256 _nonce,
-        uint256 amount,
-        string memory name, 
-        uint256 level, 
-        bytes32 hash,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
+        uint256 buyway
     ) public payable nonReentrant {
-        // bytes32 digest = keccak256(//将传入的内容与 DOMAIN_SEPARATOR 一起编码成hash串
-        //     abi.encodePacked(
-        //         // "\x19\x01",
-        //         // "\x19Ethereum Signed Message:\n32",
-        //         // DOMAIN_SEPARATOR,
-        //         keccak256(
-        //             abi.encode(
-        //                 BUYROLE_TRANSACTION_TYPEHASH,//"BuyRole(string name, uint256 level, address account, uint256 nonce)"
-        //                 name,
-        //                 level,
-        //                 account,
-        //                 _nonce            
-        //             )
-        //         )
-        //     )
-        // );
-        // address recoveredAddress = ecrecover(digest, v, r, s);
-        bytes memory prefix = "\x19Ethereum Signed Message:\n32";
-        bytes32 prefixedHash = keccak256(abi.encodePacked(prefix,hash));
-        address recoveredAddress = ecrecover(prefixedHash, v, r, s);
-        //require(rult != msg.sender);
 
-        // console.log("CCC");
-        // console.log("qianming",recoveredAddress);
-        // console.log("yongyouzhe",owner());
-        // console.log("account",account);//对
-        // console.log("msg",msg.sender);
-        // console.log("nonce",nonce[account]);
-        require(
-            // recoveredAddress == owner() && //签名是否是拥有者
-            recoveredAddress == 0x6F90F16d4Fdbf221556d9737324AeCd9bF7179D9 && //签名是否是拥有者
-            account == msg.sender && //是否是当前调用者
-            _nonce > nonce[account] //nonce是否大于上一次nonce
-        );
-        nonce[account]++;
-        console.log("ruls=",rults);
-        _inter_transfer(amount);
-        uint256 new_tokenid = _mint(account);
-        console.log("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB");
-        role[msg.sender][roleId] = Role (
-            name,
-            level
-        );
-        roleId++;
+        if(buyway == 0 ){//购买方式0，花200AS
+            amount = 200 * 1e8; 
+        }else if(buyway == 1){//购买方式1，花400AS
+            amount = 400 * 1e8;
+        }else if(buyway == 2){
+            amount = 800 * 1e8;
+        }else{
+            amount = 1000 * 1e8;
+        }
+
+        _inter_transfer(amount.div(2));//50%进staking
+        _inter_burn(amount.div(2));//50%销毁
+        uint256 new_tokenid = _mint(msg.sender);
+        uid++;
 
         emit BuyRole(
             msg.sender,
             amount,
-            new_tokenid,
-            name, 
-            level
+            new_tokenid
         );
-        console.log("AAA");
     }
-    //购买角色时调用
+    
+    function setStaking(address account)public view{
+        require(msg.sender == owner, "not owner.");
+        stakingAddress = account;
+    }
+
+    //销毁50%
+    function _inter_burn(uint256 amount){
+        IERC20(token).transferFrom(msg.sender, address(0), amount);
+    }
+
+    //50%进staking质押
     function _inter_transfer(uint256 amount) internal {
-        console.log("token=",token);
-        console.log("meg=",msg.sender);
-        console.log("address(this)=",address(this));
-        IERC20(token).transferFrom(msg.sender, address(this), amount);
+        require(stakingAddress != address(0), "staking address not address(0).");
+        IERC20(token).transferFrom(msg.sender, stakingAddress, amount);
     }
 
     function claim_token(uint256 number) public onlyOwner {
