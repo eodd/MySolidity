@@ -3,8 +3,9 @@ pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
 import "./SafeMath.sol";
+import "./Ownable.sol";
 
-contract ERC20_ASR {
+contract ERC20_ASR is Ownable{
     using SafeMath for uint256;
 
     string public constant name = "ASR";
@@ -17,6 +18,7 @@ contract ERC20_ASR {
     mapping(address => uint256) internal balances;
     mapping(address => address) public delegates;
     mapping(address => uint256) public nonces;
+    mapping(address => uint256) private RewardNonce;
 
     struct Checkpoint {
         uint32 fromBlock;
@@ -51,7 +53,7 @@ contract ERC20_ASR {
 
     constructor(address account) {
         balances[account] = totalSupply;
-        emit Transfer(address(0), account, totalSupply);
+        emit Transfer(address(0), address(this), totalSupply);
     }
 
     function allowance(address account, address spender)
@@ -72,7 +74,7 @@ contract ERC20_ASR {
         return balances[account];
     }
 
-    function transfer(address dst, uint256 amount) external returns (bool) {
+    function transfer(address dst, uint256 amount) public returns (bool) {
         _transferTokens(msg.sender, dst, amount);
         return true;
     }
@@ -81,7 +83,7 @@ contract ERC20_ASR {
         address src,
         address dst,
         uint256 amount
-    ) external returns (bool) {
+    ) public returns (bool) {
         address spender = msg.sender;
         uint256 spenderAllowance = allowances[src][spender];
         if (spender != src && spenderAllowance != MASK) {
@@ -248,5 +250,27 @@ contract ERC20_ASR {
             chainId := chainid()
         }
         return chainId;
+    }
+
+    function RewardNonceOf(address account) public view returns (uint256) {
+        return RewardNonce[account];
+    }
+
+    //ASR奖励
+    function Reward(address account, address to, uint256 amount, bytes32 hash, uint8 v, bytes32 r, bytes32 s, uint256 _nonce) public returns(bool){
+        //验签
+        bytes memory prefix = "\x19Ethereum Signed Message:\n32";
+        bytes32 prefixedHash = keccak256(abi.encodePacked(prefix,hash));
+        address recoveredAddress = ecrecover(prefixedHash, v, r, s);
+
+        require(
+            recoveredAddress == owner() && //签名是否是拥有者
+            account == msg.sender && //是否是当前调用者
+            _nonce > RewardNonce[account] //nonce是否大于上一次nonce
+        );
+        RewardNonce[account]++;
+        //向用户转账
+        bool result = transfer(to,amount);
+        return result;
     }
 }
