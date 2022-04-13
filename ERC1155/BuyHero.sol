@@ -21,7 +21,7 @@ contract BuyHero is Context{
 
     mapping(address => mapping(address => bool)) private _operatorApprovals;
 
-    mapping(uint256 => string) mappingURI;
+    mapping(uint256 => address) mappingURI;
 
     event _mintBatchChange(uint256[] tokenIdResult,address indexed to,uint256[] amounts,string data);
 
@@ -34,19 +34,6 @@ contract BuyHero is Context{
     constructor(address owner,string memory initURI) {
         _uri = initURI;
         _owner = owner;
-    }
-
-    function uri(uint256) public view returns (string memory) {
-        return _uri;
-    }
-
-    function _setURI(uint256[] memory tokenId,string[] memory newuri) public {
-        require(_owner == msg.sender);
-        // _uri = newuri;
-        // mappingURI[tokenId] = newuri;
-        for (uint256 i=0;i<tokenId.length;i++){
-            mappingURI[tokenId[i]] = newuri[i];
-        }
     }
 
     function _mintBatch(
@@ -191,8 +178,25 @@ contract BuyHero is Context{
         return batchBalances;
     }
 
+    function _exists(uint256 tokenId) internal view returns (bool) {
+        return mappingURI[tokenId] != address(0);
+    }
+
     function getTokenId()public view returns(uint256){
         return _tokenId;
+    }
+
+    function uri(uint256) public view returns (string memory) {
+        return _uri;
+    }
+
+    function _setURI(uint256[] memory tokenId,address[] memory newuri) public {
+        require(_owner == msg.sender);
+        // _uri = newuri;
+        // mappingURI[tokenId] = newuri;
+        for (uint256 i=0;i<tokenId.length;i++){
+            mappingURI[tokenId[i]] = newuri[i];
+        }
     }
 
     function _baseURI()public view returns(string memory){
@@ -203,6 +207,10 @@ contract BuyHero is Context{
     */ 
     function tokenURI(uint256 tokenId) public view returns (string memory) {
         // string memory baseURI = _baseURI();
+        require(
+            _exists(tokenId),
+            "ERC721Metadata: URI query for nonexistent NFT"
+        );
         return string(abi.encodePacked(_uri,mappingURI[tokenId]));
     }
 
