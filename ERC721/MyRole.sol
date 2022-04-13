@@ -21,9 +21,9 @@ contract MyRole {
     
     string public baseExtension = ".json";
 
-    string public baseURI;
+    // string public baseURI;
 
-    string _initBaseURI = "http://agestrategy.io/";
+    string private initURI;
     
     mapping(uint256 => bool) public nftLock;    
 
@@ -33,7 +33,9 @@ contract MyRole {
 
     mapping(uint256 => address) private _tokenApprovals;    
 
-    mapping(address => mapping(address => bool)) private _operatorApprovals;            
+    mapping(address => mapping(address => bool)) private _operatorApprovals;       
+
+    mapping(uint256 => string) myTokenURI;     
     // mapping(uint256 => uint256) private price;
     // mapping(uint256 => string) private _tokenURIs;
     
@@ -60,12 +62,13 @@ contract MyRole {
     //     setBaseURI(_initBaseURI);//设置URI地址        
     // }
 
-    constructor(address owner){
+    constructor(address owner,string memory initBaseURI){
         _owner = owner;
         // token = _token;//ERC20代币token
         // claimAccount = _claimAccount;//提钱账户
         // _stakingAddress = stakingAddress;
-        setBaseURI(_initBaseURI);//设置URI地址        
+        // setBaseURI(_initBaseURI);//设置URI地址     
+        initURI = initBaseURI;
     }
 
     //非重入
@@ -283,36 +286,25 @@ contract MyRole {
     //     return newItemId;
     // }
 
-    //设置初始URI
-    function setBaseURI(string memory _newBaseURI) public {
-        baseURI = _newBaseURI;
+    function setBaseURI(uint256[] memory tokenId,string[] memory newuri) public {
+        require(_owner == msg.sender);
+        // myTokenURI[tokenId] = newuri;
+        for (uint256 i=0;i<tokenId.length;i++){
+
+            myTokenURI[tokenId[i]] = newuri[i];
+        }
     }
-    //初始URI
-    function _baseURI() internal view returns (string memory) {
-        return baseURI;
+
+    function _initURI() internal view returns (string memory) {
+        return initURI;
     }
 
     //tokenURI
-    function tokenURI(uint256 tokenId)
-        public
-        view
-        returns (string memory)
-    {
+    function tokenURI(uint256 tokenId)public view returns(string memory){
         require(
             _exists(tokenId),
             "ERC721Metadata: URI query for nonexistent NFT"
         );
-
-        string memory currentBaseURI = _baseURI();
-        return
-            bytes(currentBaseURI).length > 0
-                ? string(
-                    abi.encodePacked(
-                        currentBaseURI,
-                        tokenId.toString(),
-                        baseExtension
-                    )
-                )
-                : "";
+        return string(abi.encodePacked(initURI,myTokenURI[tokenId]));
     }
 }
