@@ -10,21 +10,29 @@ contract BuyHero is Context{
     using Strings for uint256;
 
     string private _uri;
+
     address private _owner;
-    uint256 private tokenId;
+
+    uint256 private _tokenId;
+
     uint256[] private tokenIdResult;
 
     mapping(uint256 => mapping(address => uint256)) private _balances;
+
     mapping(address => mapping(address => bool)) private _operatorApprovals;
-    mapping(uint256 => string) tokenUri;
+
+    mapping(uint256 => string) mappingURI;
 
     event _mintBatchChange(uint256[] tokenIdResult,address indexed to,uint256[] amounts,string data);
+
     event _safeTransferFromChange(address indexed operator, address indexed from,address indexed to,uint256 id,uint256 amount);
+    
     event _safeBatchTransferFromChange(address indexed operator,address indexed from,address indexed to,uint256[] ids,uint256[] amounts);
+   
     event _setApprovalForAllChange(address indexed owner,address indexed operator,bool approved);
 
-    constructor(address owner) {
-        // _setURI(_uri);
+    constructor(address owner,string memory initURI) {
+        _uri = initURI;
         _owner = owner;
     }
 
@@ -32,9 +40,13 @@ contract BuyHero is Context{
         return _uri;
     }
 
-    function _setURI(string memory newuri) public {
+    function _setURI(uint256[] memory tokenId,string[] memory newuri) public {
         require(_owner == msg.sender);
-        _uri = newuri;
+        // _uri = newuri;
+        // mappingURI[tokenId] = newuri;
+        for (uint256 i=0;i<tokenId.length;i++){
+            mappingURI[tokenId[i]] = newuri[i];
+        }
     }
 
     function _mintBatch(
@@ -54,9 +66,9 @@ contract BuyHero is Context{
             // _balances[ids[i]][to] += amounts[i];
             // tokenUri[ids[i]] = _uri[i];
             // tokenId += 1;
-            tokenId += 1;
-            _balances[tokenId][to] += amounts[i];
-            tokenIdResult.push(tokenId);
+            _tokenId += 1;
+            _balances[_tokenId][to] += amounts[i];
+            tokenIdResult.push(_tokenId);
         }
 
         emit _mintBatchChange(tokenIdResult,to,amounts,data);
@@ -180,19 +192,18 @@ contract BuyHero is Context{
     }
 
     function getTokenId()public view returns(uint256){
-        return tokenId;
+        return _tokenId;
     }
 
     function _baseURI()public view returns(string memory){
         return _uri;
     }
-
     /**
     * @dev Returns an URI for a given token ID
-    */
-    function tokenURI(uint256 _tokenId) public view returns (string memory) {
-        string memory baseURI = _baseURI();
-        return string(abi.encodePacked(baseURI,_tokenId.toString()));
+    */ 
+    function tokenURI(uint256 tokenId) public view returns (string memory) {
+        // string memory baseURI = _baseURI();
+        return string(abi.encodePacked(_uri,mappingURI[tokenId]));
     }
 
 }
