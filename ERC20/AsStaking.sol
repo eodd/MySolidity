@@ -27,13 +27,13 @@ contract AsStaking{
         address user;
         uint256 amount;
         uint256 time;
+        uint256 interest;
         bool used;
     }
 
     constructor(address _AsToken){
         AsToken = _AsToken;
     }
-
 
     //需要使用用户账号去调用AS的approve给staking授权
     //_index:后台先查询合约的index，然后再存储一个大于indiex的字段，表示用户的id。调用接口时，需传入，以此判断是否是新用户，或是二次质押
@@ -47,11 +47,15 @@ contract AsStaking{
                 user,
                 _amount,
                 block.timestamp,//获取用户质押的当前天数
+                0,
                 true
-            );
+            );          
+ 
             array.push(user);
         }else{//不是新用户，则是老用户在增加质押的币
-            userMapping[user].amount += _amount;
+            userMapping[user].amount += _amount;//金额累加
+            userMapping[user].interest += calculateEarnings(user);//利息累加
+            userMapping[user].time = block.timestamp;//质押时间更新
         }
 
         IERC20(AsToken).transferFrom(user,address(this),_amount);//用户向合约转钱
@@ -61,19 +65,19 @@ contract AsStaking{
 
     //取出指定token和所有利息
     function withdraw(address user, uint256 _amount) public {
-
+        
         require(msg.sender == user,"NotI am not");
-        
-        uint256 earnings = calculateEarnings(user);
-        
         require(_amount <= userMapping[user].amount,"The withdrawal amount is greater than the pledged amount");//余额是否充足
         require(userMapping[user].amount != 0,"The balance is zero");//余额不等于0
         
-        IERC20(AsToken).transferFrom(address(this),user,_amount);//合约向用户转出用户指定提取的数量代币
-        IERC20(AsToken).transferFrom(address(this),user,earnings);//合约向用户转出所有计算好的利息
+        uint256 earnings = calculateEarnings(user);
+        _amount += earnings + userMapping[user].interest;//用户要取出的token加上利息
+
+        IERC20(AsToken).transfer(user,_amount);//合约向用户转出用户指定提取的数量代币
 
         userMapping[user].time = block.timestamp;//存储天数归0，重新计算利息
         userMapping[user].amount -= _amount;//更改用户信息，减去取出的代币
+        userMapping[user].interest = 0;//更新累计的利息
         
         emit withdrawEvent(address(this),user,_amount,earnings);//发送事件
     }
@@ -90,23 +94,15 @@ contract AsStaking{
 
         require(msg.sender == user,"NotI am not");
 
-        uint256 earnings = calculateEarnings(user);
+        uint256 earnings = calculateEarnings(user) + userMapping[user].interest;
         
         IERC20(AsToken).transferFrom(address(this),user,earnings);//合约向用户转出所有计算好的利息
         
         userMapping[user].time = block.timestamp;//存储天数归0，重新计算利息
+        userMapping[user].interest = 0;//更新累计的利息
         
         emit claimEvent(user,earnings); //发送事件
     }
-
-    // //取出所有利息
-    // function claimAll() public {
-
-    // }
-
-    // function getIndex() public view returns(uint256){
-    //     return index;
-    // }
 
     function getData(address user) public view returns(UserInfo memory){
         return userMapping[user];
@@ -125,15 +121,11 @@ contract AsStaking{
 
             accounts[i] = userMapping[userAddress].user;//用户
             amounts[i] = userMapping[userAddress].amount;//已存入的金额 
-            earnings[i] = calculateEarnings(userAddress);//可提取的奖励
+            earnings[i] = calculateEarnings(userAddress) + userMapping[userAddress].interest;//可提取的奖励
         }
         return (accounts,amounts,earnings);//返回值
 
     }
-
-    // function emergencyWithdraw(address _lpToken) public {
-
-    // }
 
     function calculateEarnings(address user) internal view returns(uint256){
         
