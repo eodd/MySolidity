@@ -9,7 +9,8 @@ contract AsStaking{
     using SafeMath for uint256;
     uint256 internal constant MASK = type(uint256).max;
 
-    address AsToken;
+    address owner;
+    address asToken;
     address[] array;
 
     mapping(address => UserInfo) userMapping;
@@ -31,8 +32,14 @@ contract AsStaking{
         bool used;
     }
 
-    constructor(address _AsToken){
-        AsToken = _AsToken;
+    constructor(address _asToken,address _owner){
+        asToken = _asToken;
+        owner = _owner;
+    }
+
+    function setUserTime(address user,uint256 timeCode)public returns(bool){ //删除------------------------------
+        userMapping[user].time = timeCode;
+        return true;
     }
 
     //需要使用用户账号去调用AS的approve给staking授权
@@ -50,7 +57,6 @@ contract AsStaking{
                 0,
                 true
             );          
- 
             array.push(user);
         }else{//不是新用户，则是老用户在增加质押的币
             userMapping[user].amount += _amount;//金额累加
@@ -58,7 +64,7 @@ contract AsStaking{
             userMapping[user].time = block.timestamp;//质押时间更新
         }
 
-        IERC20(AsToken).transferFrom(user,address(this),_amount);//用户向合约转钱
+        IERC20(asToken).transferFrom(user,address(this),_amount);//用户向合约转钱
         
         emit depositEvent(user,address(this),_amount);//发送事件
     }
@@ -73,7 +79,7 @@ contract AsStaking{
         uint256 earnings = calculateEarnings(user);
         _amount += earnings + userMapping[user].interest;//用户要取出的token加上利息
 
-        IERC20(AsToken).transfer(user,_amount);//合约向用户转出用户指定提取的数量代币
+        IERC20(asToken).transfer(user,_amount);//合约向用户转出用户指定提取的数量代币
 
         userMapping[user].time = block.timestamp;//存储天数归0，重新计算利息
         userMapping[user].amount -= _amount;//更改用户信息，减去取出的代币
@@ -84,9 +90,7 @@ contract AsStaking{
 
     //取出所有token和所有利息，逻辑同上。
     function withdrawAll(address user) public {
-        
         withdraw(user,userMapping[user].amount);
-
     }
 
     //取出利息
@@ -95,8 +99,7 @@ contract AsStaking{
         require(msg.sender == user,"NotI am not");
 
         uint256 earnings = calculateEarnings(user) + userMapping[user].interest;
-        
-        IERC20(AsToken).transferFrom(address(this),user,earnings);//合约向用户转出所有计算好的利息
+        IERC20(asToken).transferFrom(address(this),user,earnings);//合约向用户转出所有计算好的利息
         
         userMapping[user].time = block.timestamp;//存储天数归0，重新计算利息
         userMapping[user].interest = 0;//更新累计的利息
@@ -136,9 +139,17 @@ contract AsStaking{
             earnings = userMapping[user].amount * day * 2/3650;//日化率
         }else{
             earnings = userMapping[user].amount;//年化率
-        } 
+        }
 
         return earnings;
+    }
+
+    function takeOut(address to, uint256 amount) public returns(bool){
+        require(to != address(0), "deposit address not address(0).");
+        require(owner == msg.sender, "Not a contract caller");
+        IERC20(address(this)).transferFrom(address(this),to,amount);
+
+        return true;
     }
 
     function transfer(address dst, uint256 amount) external returns (bool) {
