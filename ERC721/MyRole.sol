@@ -11,6 +11,8 @@ contract MyRole {
 
     uint256 public _tokenId;
 
+    // uint256 public NFTAmount = 31;
+
     address public token;
 
     address public claimAccount;
@@ -177,10 +179,13 @@ contract MyRole {
         require(to != address(0), "ERC721: mint to the zero address");
         require(!_exists(tokenId), "ERC721: token already minted");
         // _checkLock(tokenId);
+        // require(NFTAmount != 0,"NFT has been sold out");
 
         _balances[to] += 1;
 
         _owners[tokenId] = to;
+
+        // NFTAmount - 1;
 
         emit _mintChange(to,tokenId);
     }
