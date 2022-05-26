@@ -16,6 +16,10 @@ contract BuyHero is Context{
 
     uint256 private _tokenId;
 
+    string[] private identity;
+
+    address[] private user;
+
     mapping(uint256 => mapping(address => uint256)) private _balances;
 
     mapping(address => mapping(address => bool)) private _operatorApprovals;
@@ -65,14 +69,32 @@ contract BuyHero is Context{
         // delete tokenIdResult;
 
         uint256[] memory tokenIdResult = new uint256[](amounts.length);
-
+        
         for (uint256 i = 0; i < amounts.length; i++) {
             _tokenId += 1;
             _balances[_tokenId][to] += amounts[i];
             tokenIdResult[i] = _tokenId;
+            user.push(to);
+            identity.push(data);
         }
 
         emit _mintBatchChange(tokenIdResult,to,amounts,data);
+    }
+
+    function refreshData() public view returns(uint256[] memory,address[] memory,string[] memory,uint256[] memory){
+        uint256[] memory tokenIdList = new uint256[](uint256(identity.length));
+        address[] memory _user = new address[](uint256(identity.length));
+        string[] memory idData = new string[](uint256(identity.length));
+        uint256[] memory amounts = new uint256[](uint256(identity.length));
+
+        for(uint256 i=0;i<identity.length;i++){
+            tokenIdList[i] = i+1;
+            _user[i] = user[i];
+            idData[i] = identity[i];
+            amounts[i] = _balances[i+1][user[i]];//因为balances从1开始
+        }
+
+        return(tokenIdList,_user,idData,amounts);
     }
 
     function setApprovalForAll(address operator, bool approved) public {
