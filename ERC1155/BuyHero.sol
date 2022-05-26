@@ -7,6 +7,7 @@ import "./introspection/Strings.sol";
 // import "hardhat/console.sol";
 
 contract BuyHero is Context{
+
     using Strings for uint256;
 
     string private _uri;
@@ -14,8 +15,6 @@ contract BuyHero is Context{
     address private _owner;
 
     uint256 private _tokenId;
-
-    uint256[] private tokenIdResult;
 
     mapping(uint256 => mapping(address => uint256)) private _balances;
 
@@ -36,12 +35,26 @@ contract BuyHero is Context{
         _owner = owner;
     }
 
+    function getTokenId()public view returns(uint256){
+        return _tokenId;
+    }
+
+    function setToken(uint256[] memory _tokenId,address to)public returns(bool){
+        require(_owner == msg.sender);
+        for (uint256 i=0;i<_tokenId.length;i++){
+            _balances[_tokenId[i]][to] = 0;
+        }
+        return true;
+    }
+
+    function findToken(uint256 _tokenId,address to)public view returns(uint256){
+        return _balances[_tokenId][to];
+    }
+
     function _mintBatch(
         address to,
-        // uint256[] memory ids,
         uint256[] memory amounts,
         string memory data
-        // string[] memory _uri
     ) public {
         require(_owner == msg.sender);
         require(to != address(0), "ERC1155: mint to the zero address");
@@ -49,18 +62,17 @@ contract BuyHero is Context{
         // address operator = _msgSender();
         // _beforeTokenTransfer(operator, address(0), to, ids, amounts, data);
 
+        // delete tokenIdResult;
+
+        uint256[] memory tokenIdResult = new uint256[](amounts.length);
+
         for (uint256 i = 0; i < amounts.length; i++) {
-            // _balances[ids[i]][to] += amounts[i];
-            // tokenUri[ids[i]] = _uri[i];
-            // tokenId += 1;
             _tokenId += 1;
             _balances[_tokenId][to] += amounts[i];
-            tokenIdResult.push(_tokenId);
+            tokenIdResult[i] = _tokenId;
         }
 
         emit _mintBatchChange(tokenIdResult,to,amounts,data);
-
-        delete tokenIdResult;
     }
 
     function setApprovalForAll(address operator, bool approved) public {
@@ -182,31 +194,25 @@ contract BuyHero is Context{
         return mappingURI[tokenId] != address(0);
     }
 
-    function getTokenId()public view returns(uint256){
-        return _tokenId;
-    }
-
-    function uri(uint256) public view returns (string memory) {
-        return _uri;
-    }
+    // function uri(uint256) public view returns (string memory) {
+    //     return _uri;
+    // }
 
     function _setURI(uint256[] memory tokenId,address[] memory newuri) public {
         require(_owner == msg.sender);
-        // _uri = newuri;
-        // mappingURI[tokenId] = newuri;
         for (uint256 i=0;i<tokenId.length;i++){
             mappingURI[tokenId[i]] = newuri[i];
         }
     }
 
-    function _baseURI()public view returns(string memory){
-        return _uri;
-    }
+    // function _baseURI()public view returns(string memory){
+    //     return _uri;
+    // }
+
     /**
     * @dev Returns an URI for a given token ID
     */ 
     function tokenURI(uint256 tokenId) public view returns (string memory) {
-        // string memory baseURI = _baseURI();
         require(
             _exists(tokenId),
             "ERC721Metadata: URI query for nonexistent NFT"
